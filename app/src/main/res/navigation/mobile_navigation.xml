@@ -50,9 +50,9 @@
         android:label="fragment_camera"
         tools:layout="@layout/fragment_camera" />
     <fragment
-        android:id="@+id/dictophoneFragment"
-        android:name="ru.mirea.zyryanov.mireaproject.ui.hardware_part.DictophoneFragment"
-        android:label="fragment_dictophone"
+        android:id="@+id/dictaphoneFragment"
+        android:name="ru.mirea.zyryanov.mireaproject.ui.hardware_part.DictaphoneFragment"
+        android:label="fragment_dictaphone"
         tools:layout="@layout/fragment_dictophone" />
 
 </navigation>

@@ -33,7 +33,7 @@
             android:id="@+id/cameraFragment"
             android:title="Camera" />
         <item
-            android:id="@+id/dictophoneFragment"
-            android:title="Dictophone" />
+            android:id="@+id/dictaphoneFragment"
+            android:title="Dictaphone" />
     </group>
 </menu>

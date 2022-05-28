@@ -9,7 +9,7 @@ import android.os.IBinder;
 
 import java.io.File;
 
-public class DictophoneService extends Service {
+public class DictaphoneService extends Service {
     private MediaPlayer mediaPlayer;
 
     @Override
@@ -19,9 +19,8 @@ public class DictophoneService extends Service {
 
     @Override
     public void onCreate(){
-
         File file = new File(getExternalFilesDir(
-                Environment.DIRECTORY_MUSIC), "record.3gp");
+                Environment.DIRECTORY_MUSIC), "mirea.3gp");
 
         mediaPlayer = MediaPlayer.create(this, Uri.fromFile(file));
         mediaPlayer.setLooping(true);

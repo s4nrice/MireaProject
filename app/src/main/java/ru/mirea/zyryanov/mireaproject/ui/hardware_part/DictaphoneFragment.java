@@ -10,6 +10,7 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -26,46 +27,20 @@ import java.io.IOException;
 
 import ru.mirea.zyryanov.mireaproject.R;
 
-public class DictophoneFragment extends Fragment {
+public class DictaphoneFragment extends Fragment {
+
+    private Button buttonRecord;
+    private Button buttonStop;
+    private MediaRecorder mediaRecorder;
+    private File audioFile;
 
     private static final int REQUEST_CODE_PERMISSION = 100;
-
     private String[] PERMISSIONS = {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.RECORD_AUDIO
     };
 
-    private boolean isDictWork;
-
-    private MediaRecorder mediaRecorder;
-    private File audioFile;
-
-    private Button buttonRecord;
-    private Button buttonStop;
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_dictophone, container, false);
-
-        isDictWork = hasPermissions(getActivity(), PERMISSIONS);
-        if (!isDictWork) {
-            ActivityCompat.requestPermissions(getActivity(), PERMISSIONS,
-                    REQUEST_CODE_PERMISSION);
-        }
-
-        mediaRecorder = new MediaRecorder();
-
-        view.findViewById(R.id.buttonRecord).setOnClickListener(this::onRecordStart);
-        view.findViewById(R.id.buttonStop).setOnClickListener(this::onStopRecord);
-        view.findViewById(R.id.buttonPlay).setOnClickListener(this::onListenRecord);
-
-        buttonRecord = view.findViewById(R.id.buttonRecord);
-        buttonStop = view.findViewById(R.id.buttonStop);
-
-        return view;
-    }
+    private boolean isWork;
 
     public static boolean hasPermissions(Context context, String... permissions) {
         if (context != null && permissions != null) {
@@ -77,7 +52,47 @@ public class DictophoneFragment extends Fragment {
         }
         return true;
     }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_CODE_PERMISSION) {
+            // permission granted
+            isWork = grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+        }
+    }
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_dictophone, container, false);
+
+        isWork = hasPermissions(getActivity(), PERMISSIONS);
+        if (!isWork) {
+            ActivityCompat.requestPermissions(getActivity(), PERMISSIONS,
+                    REQUEST_CODE_PERMISSION);
+        }
+
+        view.findViewById(R.id.buttonRecord).setOnClickListener(this::onRecordStart);
+        view.findViewById(R.id.buttonStop).setOnClickListener(this::onStopRecord);
+        view.findViewById(R.id.buttonPlay).setOnClickListener(this::onListenRecord);
+
+        buttonRecord = view.findViewById(R.id.buttonRecord);
+        buttonStop = view.findViewById(R.id.buttonStop);
+
+        // инициализация объекта MediaRecorder
+        mediaRecorder = new MediaRecorder();
+
+        return view;
+    }
+
+    public void onListenRecord(View view){
+        getActivity().startService(new Intent(getActivity(), DictaphoneService.class));
+        Toast.makeText(getActivity(), "Включаю записанный фрагмент!", Toast.LENGTH_SHORT).show();
+    }
+
+    // нажатие на кнопку старт
     public void onRecordStart(View view) {
         try {
             buttonRecord.setEnabled(false);
@@ -85,9 +100,11 @@ public class DictophoneFragment extends Fragment {
             buttonStop.requestFocus();
             startRecording();
         } catch (Exception e) {
+
         }
     }
 
+    // нажатие на кнопку стоп
     public void onStopRecord(View view) {
         buttonRecord.setEnabled(true);
         buttonStop.setEnabled(false);
@@ -96,20 +113,16 @@ public class DictophoneFragment extends Fragment {
         processAudioFile();
     }
 
-    public void onListenRecord(View view) {
-        getActivity().startService(new Intent(getActivity(), DictophoneService.class));
-    }
-
     private void startRecording() throws IOException {
-
+        // проверка доступности sd - карты
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state) ||
                 Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-
+            // выбор источника звука
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-
+            // выбор формата данных
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-
+            // выбор кодека
             mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             if (audioFile == null) {
                 // создание файла
@@ -132,7 +145,6 @@ public class DictophoneFragment extends Fragment {
                     Toast.LENGTH_SHORT).show();
         }
     }
-
     private void processAudioFile() {
         ContentValues values = new ContentValues(4);
         long current = System.currentTimeMillis();
@@ -144,7 +156,7 @@ public class DictophoneFragment extends Fragment {
         ContentResolver contentResolver = getActivity().getContentResolver();
         Uri baseUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Uri newUri = contentResolver.insert(baseUri, values);
-
+        // оповещение системы о новом файле
         getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, newUri));
     }
 }

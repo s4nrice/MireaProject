@@ -21,13 +21,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MireaProject">
         <service
-            android:name=".ui.hardware_part.DictophoneService"
+            android:name=".ui.hardware_part.DictaphoneService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="false" />
         <service
             android:name=".ui.music_player.PlayerService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
         <activity
             android:name=".MainActivity"
